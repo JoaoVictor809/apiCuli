@@ -1,15 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  ActivityIndicator,
-  Image,
-  TouchableOpacity,
-  Modal,
-} from 'react-native';
+import {View, Text, FlatList, StyleSheet, ActivityIndicator, Image, TouchableOpacity, Modal,} from 'react-native';
 import axios from 'axios';
+import {getData} from '../hooks/getData'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface Category {
@@ -19,6 +11,8 @@ interface Category {
   strCategoryDescription: string;
 }
 
+
+
 const CategoryList = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,28 +21,27 @@ const CategoryList = () => {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const insets = useSafeAreaInsets();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await axios.get(
-          'https://www.themealdb.com/api/json/v1/1/categories.php'
-        );
-        if (response.data.categories) {
-          setCategories(response.data.categories);
-        } else {
-          setCategories([]);
-        }
-      } catch (e: any) {
-        setError(e.message || 'Erro ao buscar dados.');
-      } finally {
-        setLoading(false);
-      }
-    };
+  const {getMeal} = getData();
 
-    fetchData();
+  const callGetData = async () => {
+    setLoading(true); 
+    setError(null);   
+    const foodResponse = await getMeal();
+    console.log('Resposta processada:', foodResponse); 
+
+    if (!foodResponse.error) {
+      setCategories(foodResponse.categories);
+    } else {
+      setError(foodResponse.message); 
+    }
+    setLoading(false); 
+  };
+
+  useEffect(() => {
+    callGetData();
   }, []);
+
+  
 
   if (loading) {
     return (
